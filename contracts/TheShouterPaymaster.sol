@@ -3,7 +3,7 @@ pragma solidity 0.8.14;
 
 import "@opengsn/contracts/src/BasePaymaster.sol";
 
-contract SingleRecipientPaymaster is BasePaymaster {
+contract TheShouterPaymaster is BasePaymaster {
     address public target;
 
     constructor(address _target) {

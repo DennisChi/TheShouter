@@ -5,6 +5,8 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@opengsn/contracts/src/BaseRelayRecipient.sol";
+import "@opengsn/contracts/src/interfaces/IPaymaster.sol";
+import "hardhat/console.sol";
 
 contract TheShouter is ERC721URIStorage, BaseRelayRecipient, Ownable {
     using Counters for Counters.Counter;
@@ -37,7 +39,7 @@ contract TheShouter is ERC721URIStorage, BaseRelayRecipient, Ownable {
             string(abi.encodePacked("At least ", chargeLowerLimit, " wei"))
         );
         require(
-            chargeLowerLimit > this.balance() - msg.value,
+            chargeLowerLimit > this.remain(),
             "It's not rentable now."
         );
 
@@ -56,7 +58,7 @@ contract TheShouter is ERC721URIStorage, BaseRelayRecipient, Ownable {
     }
 
     function commitComment(bytes calldata _comment) external {
-        require(this.balance() > chargeLowerLimit, "Not enough balance");
+        require(this.remain() > chargeLowerLimit, "Not enough balance");
         require(
             _comment.length <= commentHigherLimit,
             string(abi.encodePacked("At most ", commentHigherLimit, " byte."))
@@ -78,12 +80,12 @@ contract TheShouter is ERC721URIStorage, BaseRelayRecipient, Ownable {
         paymaster = payable(_paymaster);
     }
 
-    function balance() external view returns (uint256) {
-        return address(this).balance;
+    function remain() external view returns (uint256) {
+        return IPaymaster(paymaster).getRelayHubDeposit();
     }
 
     function interactable() external view returns (bool) {
-        return this.balance() <= chargeLowerLimit;
+        return this.remain() <= chargeLowerLimit;
     }
 
     function maxBoardIndex() external view returns (uint256) {
