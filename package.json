@@ -1,5 +1,5 @@
 {
-  "name": "The Shouter",
+  "name": "the_shouter",
   "scripts": {
     "gsn-with-ganache": "run-with-testrpc --networkId 1337 --chainId 31337 'gsn start'"
   },
@@ -13,5 +13,6 @@
   },
   "dependencies": {
     "@opengsn/contracts": "^2.2.6"
-  }
+  },
+  "license": "MIT"
 }
