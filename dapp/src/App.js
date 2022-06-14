@@ -1,24 +1,17 @@
 import { useState, useEffect } from 'react';
 import useIpfsFactory from './hooks/use-ipfs-factory.js'
 import { ethers } from 'ethers';
-import { Modal, Image, Card, Input, Tooltip, Button, List, Col, Row, Divider } from 'antd';
-// import useIpfs from './hooks/use-ipfs.js'
+import { Modal, Image, Card, Input, Button, List, Col, Row } from 'antd';
 import TheShouter from './util/TheShouter.json'
 import { RelayProvider } from '@opengsn/provider'
-import { Web3 } from 'web3'
-import 'antd/dist/antd.css'; // or 'antd/dist/antd.less'
+import Web3 from 'web3'
+import 'antd/dist/antd.css'; 
 
-const CONTRACT_ADDRESS = '0x0B306BF915C4d645ff596e518fAf3F9669b97016';
+const CONTRACT_ADDRESS = '0x4ed7c70F96B99c776995fB64377f0d4aB3B0e1C1';
 
-const PAYMASTER_ADDRESS = '';
+const PAYMASTER_ADDRESS = '0x5FC8d32690cc91D4c39d9d3abcBD16989F875707';
 
 const { Meta } = Card;
-
-
-
-
-const FALLBACK_IMG = "data:image/png;base64,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";
-
 
 function App() {
   // web3 state
@@ -51,19 +44,41 @@ function App() {
   // todo: split to multi useEffect
   useEffect(() => {
     const fetchData = async () => {
+      if (!account) {
+        await onConnectWalletClick();
+        return;
+      }
+
+      if (!contract) {
+        const config = {
+          PAYMASTER_ADDRESS,
+          loggerConfiguration: {
+            logLevel: 'debug',
+          }
+        }
+
+        let web3 = new Web3('http://localhost:8545');
+        const gsnProvider = await RelayProvider.newProvider({ provider: web3.currentProvider, config }).init()
+        const contract = new web3.eth.Contract(TheShouter.abi, CONTRACT_ADDRESS)
+        setContract(contract);
+        setProvider(gsnProvider)
+        return
+      }
+
+      const maxBoardIndexResult = await contract.methods.maxBoardIndex().call({ from: account });
+      const maxBoardIndex = maxBoardIndexResult.toString();
+
       if (!ipfs) {
         return
       }
 
-      if (!contract) {
+      if (Number(maxBoardIndex) === 0) {
         return;
       }
 
-      const maxBoardIndexResult = await contract.maxBoardIndex();
-      const maxBoardIndex = maxBoardIndexResult.toString();
-
       // ipfs fetch uri
-      const boardUri = await contract.tokenURI(maxBoardIndex);
+      const boardUri = await contract.methods.tokenURI(maxBoardIndex).call({ from: account });
+      console.log(boardUri)
       const stream = ipfs.cat(boardUri)
       const decoder = new TextDecoder()
       let data = ''
@@ -85,36 +100,13 @@ function App() {
       setBoardImg(imgURI)
 
       // fetch comments
-      const comments = await contract.queryComments(maxBoardIndex);
+      const comments = await contract.methods.queryComments(maxBoardIndex).call({ from: account });
       setCommentList(comments);
     }
 
     fetchData();
-  }, [ipfs, contract]);
+  }, [ipfs, contract, account]);
 
-  useEffect(() => {
-    const prepare = async () => {
-      const config = {
-        PAYMASTER_ADDRESS,
-        loggerConfiguration: {
-          logLevel: 'debug',
-          // loggerUrl: 'logger.opengsn.org',
-        }
-      }
-
-      const ethereumProvider = new ethers.providers.Web3Provider(window.ethereum);
-      const gsnProvider = await RelayProvider.newProvider({ provider: ethereumProvider, config }).init()
-      const gsnWeb3 = new Web3(gsnProvider)
-      const signer = gsnProvider.getSigner();
-      const contract = new ethers.Contract(
-        CONTRACT_ADDRESS,
-        TheShouter.abi,
-        signer
-      );
-      setContract(contract);
-      setProvider(gsnProvider)
-    }
-  })
 
   const onConnectWalletClick = async () => {
     const { ethereum } = window;
@@ -134,8 +126,16 @@ function App() {
     }
 
     const commentBytes = ethers.utils.toUtf8Bytes(comment);
-    const tx = await contract.commitComment(commentBytes);
-    console.log('commit comment', tx)
+    let bytesString = '0x'
+    for (let b in commentBytes) {
+      let bs = String(b)
+      bytesString += bs.length == 1 ? "0" + bs : bs
+    }
+    const tx = await contract.methods.commitComment(bytesString).send({ from: account });;
+
+    // const commentBytes = ethers.utils.toUtf8Bytes(comment);
+    // const tx = await contract.commitComment(commentBytes);
+    // console.log('commit comment', tx)
   }
 
   const renderBoard = () => {
@@ -224,6 +224,7 @@ function App() {
     const onOk = () => {
       const upload = async () => {
         if (!contract) {
+          console.log('no contract')
           return;
         }
         // ipfs prepare
@@ -274,7 +275,6 @@ function App() {
     <div style={{ background: '#f0f5ff' }}>
       <Col offset={8} span={8} style={{ border: 'solid', borderWidth: 2, background: 'white', borderColor: '#d6e4ff' }}>
         <Card>
-          <Button onClick={() => { const from = provider.newAccount().address; console.log('from', from) }}>Test</Button>
           {renderApplying()}
           {renderBoard()}
           {renderFuncsLine()}
