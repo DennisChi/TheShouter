@@ -12,7 +12,9 @@
     "ethers": "^5.6.8"
   },
   "dependencies": {
-    "@opengsn/contracts": "^2.2.6"
+    "@opengsn/cli": "^2.2.6",
+    "@opengsn/contracts": "^2.2.6",
+    "hardhat": "^2.9.9"
   },
   "license": "MIT"
 }

@@ -2,10 +2,11 @@
 pragma solidity 0.8.14;
 
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@opengsn/contracts/src/BaseRelayRecipient.sol";
 
-contract TheShouter is ERC721URIStorage, BaseRelayRecipient {
+contract TheShouter is ERC721URIStorage, BaseRelayRecipient, Ownable {
     using Counters for Counters.Counter;
 
     struct Board {
@@ -17,8 +18,8 @@ contract TheShouter is ERC721URIStorage, BaseRelayRecipient {
 
     Counters.Counter private tokenIds;
     mapping(uint256 => Board) private boards;
-    string public override versionRecipient = "2.2.0";
     address payable paymaster;
+    string public override versionRecipient = "2.2.0";
 
     uint256 constant chargeLowerLimit = 1000000 gwei;
     uint256 constant commentHigherLimit = 144;
@@ -26,9 +27,8 @@ contract TheShouter is ERC721URIStorage, BaseRelayRecipient {
     event RentBoard(address indexed renter, string uri);
     event CommitComment(address indexed committer, bytes content);
 
-    constructor(address forwarder, address _paymaster) ERC721("TheShouter", "SBB") {
+    constructor(address forwarder) ERC721("TheShouter", "SBB") {
         _setTrustedForwarder(forwarder);
-        paymaster = payable(_paymaster);
     }
 
     function rentBoard(string calldata _uri) external payable {
@@ -51,7 +51,7 @@ contract TheShouter is ERC721URIStorage, BaseRelayRecipient {
         board.creator = _msgSender();
 
         paymaster.transfer(msg.value);
-        
+
         emit RentBoard(_msgSender(), _uri);
     }
 
@@ -71,6 +71,11 @@ contract TheShouter is ERC721URIStorage, BaseRelayRecipient {
         board.committers.push(_msgSender());
 
         emit CommitComment(_msgSender(), _comment);
+    }
+
+    function setPaymaster(address _paymaster) onlyOwner external {
+        require(paymaster == address(0), "already setted");
+        paymaster = payable(_paymaster);
     }
 
     function balance() external view returns (uint256) {
